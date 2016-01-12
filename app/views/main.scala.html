@@ -10,7 +10,8 @@
         @helper.javascriptRouter("jsRoutes")(
             routes.javascript.Application.stream
         )
-        <script data-main="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript" src="@routes.Assets.versioned("lib/requirejs/require.js")"></script>
+        <script data-main="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript"
+                src="@routes.Assets.versioned("lib/requirejs/require.js")"></script>
     </head>
     <body>
         @content

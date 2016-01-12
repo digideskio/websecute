@@ -7,7 +7,6 @@ require.config {
     bootstrap: "../lib/bootstrap/js/bootstrap"
     jquery: "../lib/jquery/jquery"
     knockout: "../lib/knockout/knockout"
-    leaflet: "../lib/leaflet/leaflet"
   }
   shim: {
     bootstrap: {
@@ -27,4 +26,3 @@ require ["knockout", "mainPage", "bootstrap"], (ko, MainPageModel) ->
 
   model = new MainPageModel
   ko.applyBindings(model)
-

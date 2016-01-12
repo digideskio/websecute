@@ -1,27 +1,31 @@
 package actors
 
+import actors.DockerClientProtocol.{InfoCmd, InfoRes}
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import play.api.libs.json.{JsValue, Json}
 
 object ClientConnection {
-  def props(email: String, out: ActorRef) = Props(new ClientConnection(email, out))
+  def props(topLevelActor: ActorRef, email: String, out: ActorRef) = Props(classOf[ClientConnection], topLevelActor, email, out)
 }
 
 /**
  * Represents a client connection
  *
  * @param email The email address of the client
+ * @param upstream WebSocket ActorRef
  */
-class ClientConnection(email: String, upstream: ActorRef) extends Actor with ActorLogging {
+class ClientConnection(topLevelActor: ActorRef, email: String, upstream: ActorRef) extends Actor with ActorLogging {
 
   def receive = {
-    case JsValue => {
-      log.info("received JsValue")
-      upstream ! Json.obj("type" -> "FailResult", "msg" -> "status")
+    case jsVal: JsValue => {
+      topLevelActor ! InfoCmd
+      upstream ! Json.obj("type" -> "JsValue", "msg" -> jsVal.toString)
+    }
+    case info: InfoRes => {
+      upstream ! Json.obj("type" -> "InfoRes", "msg" -> InfoRes.toString)
     }
     case _ => {
-      log.info("received something else")
-      upstream ! Json.obj("type" -> "FailResult", "msg" -> "status")
+      upstream ! Json.obj("type" -> "UnknownMessage", "msg" -> "")
     }
   }
 }

@@ -2,9 +2,13 @@
 
 @main("Welcome to Play") {
 
-    Some content.
-
-    <span data-bind="text: connecting"></span>
-    <span data-bind="text: receivedCnt"></span>
+    <div data-bind="text: connecting"></div>
+    <div data-bind="text: messages().length"></div>
+    <h4>Messages</h4>
+    <ul data-bind="foreach: messages">
+        <li>
+            <span data-bind="text: message"></span>
+        </li>
+    </ul>
 
 }
