@@ -22,6 +22,7 @@ object ClientConnection {
    * Event sent from the client when they have moved
    */
   case class DockerInfo(dummy: String) extends ClientEvent
+  case class DockerImages(dummy: String) extends ClientEvent
 
   /*
    * JSON serialisers/deserialisers for the above messages
@@ -31,10 +32,12 @@ object ClientConnection {
     implicit def clientEventFormat: Format[ClientEvent] = Format(
       (__ \ "event").read[String].flatMap {
         case "docker-info-cmd" => DockerInfo.dockerInfoFormat.map(identity)
+        case "docker-images-cmd" => DockerImages.dockerImagesFormat.map(identity)
         case other => Reads(_ => JsError("Unknown client event: " + other))
       },
       Writes {
-        case di: DockerInfo => DockerInfo.dockerInfoFormat.writes(di)
+        case dinfo: DockerInfo => DockerInfo.dockerInfoFormat.writes(dinfo)
+        case dimgs: DockerImages => DockerImages.dockerImagesFormat.writes(dimgs)
       }
     )
 
@@ -58,6 +61,14 @@ object ClientConnection {
       case ("docker-info-cmd", dummy) => DockerInfo(dummy)
     }, dockerInfo => ("docker-info-cmd", dockerInfo.dummy))
   }
+  object DockerImages {
+    implicit def dockerImagesFormat: Format[DockerImages] = (
+      (__ \ "event").format[String] ~
+        (__ \ "dummy").format[String]
+      ).apply({
+      case ("docker-images-cmd", dummy) => DockerImages(dummy)
+    }, dockerImages => ("docker-images-cmd", dockerImages.dummy))
+  }
 }
 
 /**
@@ -73,8 +84,14 @@ class ClientConnection(topLevelActor: ActorRef, email: String, upstream: ActorRe
     case DockerInfo(dummy: String) => {
       topLevelActor ! DockerInfoCmd
     }
+    case DockerImages(dummy: String) => {
+      topLevelActor ! DockerImagesCmd
+    }
     case info: DockerInfoRes => {
       upstream ! DockerInfo(info.toString)
+    }
+    case images: DockerImagesRes => {
+      upstream ! DockerInfo(images.toString)
     }
     case _ => {
       log.error("Unknown message")

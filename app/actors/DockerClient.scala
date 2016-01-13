@@ -34,10 +34,16 @@ class DockerClient(version: String, uri: String) extends Actor {
       val res = docker.infoCmd().exec()
       sender ! DockerInfoRes(res.toString)
     }
+    case DockerImagesCmd => {
+      val res = docker.listImagesCmd().exec()
+      sender ! DockerImagesRes(res.toString)
+    }
   }
 }
 
 object DockerClientProtocol {
   case object DockerInfoCmd
   case class DockerInfoRes(info: String)
+  case object DockerImagesCmd
+  case class DockerImagesRes(images: String)
 }

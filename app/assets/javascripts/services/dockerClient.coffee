@@ -14,4 +14,10 @@ define () ->
           dummy: ""
       )
 
+    images: ->
+      @ws.send(JSON.stringify
+          event: "docker-images-cmd"
+          dummy: ""
+      )
+
   return DockerClient

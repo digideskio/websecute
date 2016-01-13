@@ -34,5 +34,7 @@ define ["knockout", "dockerClient"], (ko, DockerClient) ->
 
     dockerInfo: ->
       @dockerClient().info()
+    dockerImages: ->
+      @dockerClient().images()
 
   return MainPageModel
