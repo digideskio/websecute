@@ -1,11 +1,63 @@
 package actors
 
-import actors.DockerClientProtocol.{InfoCmd, InfoRes}
+import actors.DockerClientProtocol._
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import play.api.libs.json.{JsValue, Json}
 
+
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
+import play.api.mvc.WebSocket.FrameFormatter
+import play.api.libs.json.Reads._
+
 object ClientConnection {
   def props(topLevelActor: ActorRef, email: String, out: ActorRef) = Props(classOf[ClientConnection], topLevelActor, email, out)
+
+  /**
+   * Events to/from the client side
+   */
+  sealed trait ClientEvent
+
+  /**
+   * Event sent from the client when they have moved
+   */
+  case class DockerInfo(dummy: String) extends ClientEvent
+
+  /*
+   * JSON serialisers/deserialisers for the above messages
+   */
+
+  object ClientEvent {
+    implicit def clientEventFormat: Format[ClientEvent] = Format(
+      (__ \ "event").read[String].flatMap {
+        case "docker-info-cmd" => DockerInfo.dockerInfoFormat.map(identity)
+        case other => Reads(_ => JsError("Unknown client event: " + other))
+      },
+      Writes {
+        case di: DockerInfo => DockerInfo.dockerInfoFormat.writes(di)
+      }
+    )
+
+    /**
+     * Formats WebSocket frames to be ClientEvents.
+     */
+    implicit def clientEventFrameFormatter: FrameFormatter[ClientEvent] = FrameFormatter.jsonFrame.transform(
+      clientEvent => Json.toJson(clientEvent),
+      json => Json.fromJson[ClientEvent](json).fold(
+        invalid => throw new RuntimeException("Bad client event on WebSocket: " + invalid),
+        valid => valid
+      )
+    )
+  }
+
+  object DockerInfo {
+    implicit def dockerInfoFormat: Format[DockerInfo] = (
+      (__ \ "event").format[String] ~
+        (__ \ "dummy").format[String]
+      ).apply({
+      case ("docker-info-cmd", dummy) => DockerInfo(dummy)
+    }, dockerInfo => ("docker-info-cmd", dockerInfo.dummy))
+  }
 }
 
 /**
@@ -15,16 +67,17 @@ object ClientConnection {
  * @param upstream WebSocket ActorRef
  */
 class ClientConnection(topLevelActor: ActorRef, email: String, upstream: ActorRef) extends Actor with ActorLogging {
+  import ClientConnection._
 
   def receive = {
-    case jsVal: JsValue => {
-      topLevelActor ! InfoCmd
-      upstream ! Json.obj("type" -> "JsValue", "msg" -> jsVal.toString)
+    case DockerInfo(dummy: String) => {
+      topLevelActor ! DockerInfoCmd
     }
-    case info: InfoRes => {
-      upstream ! Json.obj("type" -> "InfoRes", "msg" -> InfoRes.toString)
+    case info: DockerInfoRes => {
+      upstream ! DockerInfo(info.toString)
     }
     case _ => {
+      log.error("Unknown message")
       upstream ! Json.obj("type" -> "UnknownMessage", "msg" -> "")
     }
   }

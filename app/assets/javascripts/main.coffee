@@ -3,6 +3,7 @@
 #
 require.config {
   paths: {
+    dockerClient: "./services/dockerClient"
     mainPage: "./models/mainPage"
     bootstrap: "../lib/bootstrap/js/bootstrap"
     jquery: "../lib/jquery/jquery"

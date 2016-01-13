@@ -4,10 +4,11 @@
 # This class handles most of the user interactions with the buttons/menus/forms on the page, as well as manages
 # the WebSocket connection.  It delegates to other classes to manage everything else.
 #
-define ["knockout"], (ko) ->
+define ["knockout", "dockerClient"], (ko, DockerClient) ->
 
   class MainPageModel
     constructor: () ->
+      @dockerClient = ko.observable()
       @connecting = ko.observable("Not connected")
       @messages = ko.observableArray()
       @connect()
@@ -17,14 +18,8 @@ define ["knockout"], (ko) ->
       @ws = new WebSocket(jsRoutes.controllers.Application.stream("anonymous@gmail.com").webSocketURL())
 
       @ws.onopen = (event) =>
+        @dockerClient(new DockerClient(@ws))
         @connecting("Connected")
-        @ws.send(JSON.stringify({type: "RunMsg", scriptUrn: "urn"}))
-
-      @ws.onclose = (event) =>
-        # Need to handle reconnects in case of errors
-        if (!event.wasClean)
-          @connect()
-          @connecting("Reconnecting...")
 
       @ws.onmessage = (event) =>
         @messages.push({ message: event.data })
@@ -36,5 +31,8 @@ define ["knockout"], (ko) ->
 
     disconnect: ->
       @ws.close()
+
+    dockerInfo: ->
+      @dockerClient().info()
 
   return MainPageModel

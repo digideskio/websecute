@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.{Singleton, Inject}
 
+import actors.ClientConnection.ClientEvent
 import actors.{DockerClientSupervisor, ClientConnection}
 import akka.actor._
 import play.api.libs.json.JsValue
@@ -17,7 +18,7 @@ class Application @Inject() (system: ActorSystem) extends Controller {
     Ok(views.html.index("Your new application is ready."))
   }
 
-  def stream(email: String) = WebSocket.acceptWithActor[JsValue, JsValue] { _ => upstream =>
+  def stream(email: String) = WebSocket.acceptWithActor[ClientEvent, ClientEvent] { _ => upstream =>
     ClientConnection.props(topLevelActor, "anonymous@google.com", upstream)
   }
 }
