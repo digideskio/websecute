@@ -1,4 +1,4 @@
-name := """playAkkaPlayground"""
+name := """websecuteDockerManager"""
 
 version := "1.0-SNAPSHOT"
 
