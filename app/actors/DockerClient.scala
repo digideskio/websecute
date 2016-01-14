@@ -1,15 +1,20 @@
 package actors
 
+
 import scala.concurrent.duration._
-import akka.actor._
 import akka.actor.SupervisorStrategy.stop
-import com.github.dockerjava.core.{DockerClientConfig, DockerClientBuilder}
+import akka.actor._
+
+import org.apache.commons.lang3.builder.{ToStringBuilder, ToStringStyle}
+import com.github.dockerjava.core.{DockerClientBuilder, DockerClientConfig}
+
 
 class DockerClientSupervisor() extends Actor {
   override def supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 3, withinTimeRange = 5 seconds) {
     case m: Exception => stop // TODO: Administrator's log
   }
 
+  ToStringBuilder.setDefaultStyle(ToStringStyle.JSON_STYLE)
   val dockerClientProps = Props(classOf[DockerClient], "1.17", "http://127.0.0.1:4243") // TODO: Customizable?
   val dockerClient = context.actorOf(dockerClientProps)
 

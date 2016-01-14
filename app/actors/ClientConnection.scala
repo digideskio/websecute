@@ -87,11 +87,11 @@ class ClientConnection(topLevelActor: ActorRef, email: String, upstream: ActorRe
     case DockerImages(dummy: String) => {
       topLevelActor ! DockerImagesCmd
     }
-    case info: DockerInfoRes => {
-      upstream ! DockerInfo(info.toString)
+    case infoRes: DockerInfoRes => {
+      upstream ! DockerInfo(infoRes.info)
     }
-    case images: DockerImagesRes => {
-      upstream ! DockerInfo(images.toString)
+    case imagesRes: DockerImagesRes => {
+      upstream ! DockerImages(imagesRes.images)
     }
     case _ => {
       log.error("Unknown message")

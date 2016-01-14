@@ -22,12 +22,8 @@ define ["knockout", "dockerClient"], (ko, DockerClient) ->
         @connecting("Connected")
 
       @ws.onmessage = (event) =>
-        @messages.push({ message: event.data })
-        #json = JSON.parse(event.data)
-        #if json.event == "user-positions"
-        #  @ws.send(JSON.stringify(event))
-        #else
-        #  @ws.send(JSON.stringify(event))
+        data = JSON.parse(JSON.parse(event.data).dummy)
+        @messages.unshift({ message: JSON.stringify(data, null, ' ') })
 
     disconnect: ->
       @ws.close()

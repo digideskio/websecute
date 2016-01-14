@@ -7,10 +7,7 @@
     <button data-bind="click: dockerInfo">DockerInfo</button>
     <button data-bind="click: dockerImages">DockerImages</button>
     <h4>Messages</h4>
-    <ul data-bind="foreach: messages">
-        <li>
-            <span data-bind="text: message"></span>
-        </li>
-    </ul>
-
+    <pre data-bind="foreach: messages">
+        <div data-bind="text: message"></div>
+    </pre>
 }
