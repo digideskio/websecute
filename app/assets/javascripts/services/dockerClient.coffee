@@ -20,4 +20,10 @@ define () ->
           dummy: ""
       )
 
+    containers: ->
+      @ws.send(JSON.stringify
+          event: "docker-list-containers-cmd"
+          dummy: ""
+      )
+
   return DockerClient

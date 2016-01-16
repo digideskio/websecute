@@ -1,6 +1,5 @@
 package actors
 
-
 import scala.concurrent.duration._
 import akka.actor.SupervisorStrategy.stop
 import akka.actor._
@@ -43,12 +42,20 @@ class DockerClient(version: String, uri: String) extends Actor {
       val res = docker.listImagesCmd().exec()
       sender ! DockerImagesRes(res.toString)
     }
+    case DockerListContainersCmd => {
+      val res = docker.listContainersCmd().withShowAll(true).exec()
+      sender ! DockerListContainersRes(res.toString)
+    }
   }
 }
 
 object DockerClientProtocol {
   case object DockerInfoCmd
   case class DockerInfoRes(info: String)
+
   case object DockerImagesCmd
   case class DockerImagesRes(images: String)
+
+  case object DockerListContainersCmd
+  case class DockerListContainersRes(containers: String)
 }
