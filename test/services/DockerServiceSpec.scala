@@ -1,10 +1,11 @@
 package services
 
 import actors.ClientConnection
+import scala.concurrent.duration._
 import actors.DockerClientProtocol._
 import actors.DockerClientSupervisor
 import akka.actor.{Props, ActorSystem}
-import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
+import akka.testkit.{CallingThreadDispatcher, DefaultTimeout, ImplicitSender, TestKit}
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{MustMatchers, WordSpecLike}
 
@@ -17,24 +18,21 @@ class DockerServiceSpec extends TestKit(ActorSystem("testDockerService",
   with StopSystemAfterAll {
   "The DockerClient" must {
     val dockerClientSupervisor = system.actorOf(Props[DockerClientSupervisor])
-    /*"process requests asynchronously" in {
-      dockerClientSupervisor ! GetInfo
-      dockerClientSupervisor ! GetImages
-      dockerClientSupervisor ! GetInfo
-      dockerClientSupervisor ! GetImages
-      dockerClientSupervisor ! GetInfo
-      dockerClientSupervisor ! GetImages
-      dockerClientSupervisor ! GetInfo
-      dockerClientSupervisor ! GetImages
-      val results = receiveWhile() {
-        case GetInfoRes(id) if id.charAt(0) == '{' => id
+    "process requests asynchronously" in {
+      (0 until 50).foreach { i =>
+        dockerClientSupervisor ! GetInfo
+        dockerClientSupervisor ! GetImages
       }
-
-      /*val results = receiveN(8, 5 seconds) {
-        case GetInfoRes(m: String) => m
-      }*/
-      results must be (List(2,3))
-    }*/
+      val t1 = System.currentTimeMillis()
+      val results = receiveN(100, 10 seconds).map {
+        case GetInfoRes(m: String) => GetInfo
+        case GetImagesRes(m: String) => GetImages
+      }
+      val t2 = System.currentTimeMillis()
+      info(results.toString())
+      results must have length 100
+      info("Time: " + (t2 - t1).toFloat/1000)
+    }
     "get information from the Docker node" in {
       dockerClientSupervisor ! GetInfo
       expectMsgPF() {
