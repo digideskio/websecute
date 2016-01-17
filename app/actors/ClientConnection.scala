@@ -91,17 +91,17 @@ class ClientConnection(topLevelActor: ActorRef, email: String, upstream: ActorRe
   import ClientConnection._
 
   def receive = { // TODO: Refactor unmarshalling. This file is getting too big.
-    case DockerInfo(dummy: String) => topLevelActor ! DockerInfoCmd
+    case DockerInfo(dummy: String) => topLevelActor ! GetInfo
     case res: GetInfoRes => {
       upstream ! DockerInfo(res.info)
     }
 
-    case DockerImages(dummy: String) => topLevelActor ! DockerImagesCmd
+    case DockerImages(dummy: String) => topLevelActor ! GetImages
     case res: GetImagesRes => {
       upstream ! DockerImages(res.images)
     }
 
-    case DockerListContainers(dummy: String) => topLevelActor ! DockerListContainersCmd
+    case DockerListContainers(dummy: String) => topLevelActor ! GetContainers
     case res: GetContainersRes => {
       upstream ! DockerListContainers(res.containers)
     }

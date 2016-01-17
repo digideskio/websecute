@@ -1,5 +1,7 @@
 package actors
 
+import akka.event.LoggingReceive
+
 import scala.concurrent.duration._
 import akka.actor.SupervisorStrategy.stop
 import akka.actor._
@@ -37,20 +39,20 @@ class DockerClient(version: String, uri: String) extends Actor {
 
   val docker = new DockerService(config)
 
-  def receive = {
-    case DockerInfoCmd => docker.getInfo pipeTo sender
-    case DockerImagesCmd => docker.getImages pipeTo sender
-    case DockerListContainersCmd => docker.getContainers pipeTo sender
+  def receive = LoggingReceive {
+    case GetInfo => docker.getInfo pipeTo sender
+    case GetImages => docker.getImages pipeTo sender
+    case GetContainers => docker.getContainers pipeTo sender
   }
 }
 
 object DockerClientProtocol {
-  case object DockerInfoCmd
+  case object GetInfo
   case class GetInfoRes(info: String)
 
-  case object DockerImagesCmd
+  case object GetImages
   case class GetImagesRes(images: String)
 
-  case object DockerListContainersCmd
+  case object GetContainers
   case class GetContainersRes(containers: String)
 }
