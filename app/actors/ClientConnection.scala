@@ -4,7 +4,6 @@ import actors.DockerClientProtocol._
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import play.api.libs.json.{JsValue, Json}
 
-
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import play.api.mvc.WebSocket.FrameFormatter
@@ -93,17 +92,17 @@ class ClientConnection(topLevelActor: ActorRef, email: String, upstream: ActorRe
 
   def receive = { // TODO: Refactor unmarshalling. This file is getting too big.
     case DockerInfo(dummy: String) => topLevelActor ! DockerInfoCmd
-    case res: DockerInfoRes => {
+    case res: GetInfoRes => {
       upstream ! DockerInfo(res.info)
     }
 
     case DockerImages(dummy: String) => topLevelActor ! DockerImagesCmd
-    case res: DockerImagesRes => {
+    case res: GetImagesRes => {
       upstream ! DockerImages(res.images)
     }
 
     case DockerListContainers(dummy: String) => topLevelActor ! DockerListContainersCmd
-    case res: DockerListContainersRes => {
+    case res: GetContainersRes => {
       upstream ! DockerListContainers(res.containers)
     }
 

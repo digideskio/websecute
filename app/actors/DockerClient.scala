@@ -5,7 +5,7 @@ import akka.actor.SupervisorStrategy.stop
 import akka.actor._
 
 import org.apache.commons.lang3.builder.{ToStringBuilder, ToStringStyle}
-import com.github.dockerjava.core.{DockerClientBuilder, DockerClientConfig}
+import com.github.dockerjava.core.DockerClientConfig
 
 
 class DockerClientSupervisor() extends Actor {
@@ -26,36 +26,31 @@ class DockerClientSupervisor() extends Actor {
 
 class DockerClient(version: String, uri: String) extends Actor {
   import DockerClientProtocol._
+  import services.DockerService
+  import akka.pattern.pipe
+  import context.dispatcher
 
   val config = DockerClientConfig.createDefaultConfigBuilder()
     .withVersion(version)
     .withUri(uri)
     .build()
-  val docker = DockerClientBuilder.getInstance(config).build()
+
+  val docker = new DockerService(config)
 
   def receive = {
-    case DockerInfoCmd => {
-      val res = docker.infoCmd().exec()
-      sender ! DockerInfoRes(res.toString)
-    }
-    case DockerImagesCmd => {
-      val res = docker.listImagesCmd().exec()
-      sender ! DockerImagesRes(res.toString)
-    }
-    case DockerListContainersCmd => {
-      val res = docker.listContainersCmd().withShowAll(true).exec()
-      sender ! DockerListContainersRes(res.toString)
-    }
+    case DockerInfoCmd => docker.getInfo pipeTo sender
+    case DockerImagesCmd => docker.getImages pipeTo sender
+    case DockerListContainersCmd => docker.getContainers pipeTo sender
   }
 }
 
 object DockerClientProtocol {
   case object DockerInfoCmd
-  case class DockerInfoRes(info: String)
+  case class GetInfoRes(info: String)
 
   case object DockerImagesCmd
-  case class DockerImagesRes(images: String)
+  case class GetImagesRes(images: String)
 
   case object DockerListContainersCmd
-  case class DockerListContainersRes(containers: String)
+  case class GetContainersRes(containers: String)
 }
