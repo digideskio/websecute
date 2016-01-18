@@ -7,23 +7,31 @@ define () ->
     constructor: (ws) ->
       @ws = ws
 
+    handleResult: (message, json) ->
+      if message == "DockerInfo"
+        return json
+      if message == "DockerImages"
+        return json
+      if message == "DockerContainers"
+        return json
+
     # Send the DockerInfo command
     info: ->
       @ws.send(JSON.stringify
-          event: "docker-info-cmd"
-          dummy: ""
+          message: "DockerInfo"
+          data: ""
       )
 
     images: ->
       @ws.send(JSON.stringify
-          event: "docker-images-cmd"
-          dummy: ""
+          message: "DockerImages"
+          data: ""
       )
 
     containers: ->
       @ws.send(JSON.stringify
-          event: "docker-list-containers-cmd"
-          dummy: ""
+          message: "DockerContainers"
+          data: ""
       )
 
   return DockerClient
