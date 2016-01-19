@@ -54,5 +54,7 @@ object DockerClientProtocol {
   case class GetImagesRes(images: String)
 
   case object GetContainers
-  case class GetContainersRes(containers: String)
+  case class GetContainersRes(containers: String) {
+    def unapply() = containers
+  }
 }

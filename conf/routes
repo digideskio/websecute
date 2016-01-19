@@ -4,6 +4,8 @@
 
 # Home page
 GET        /                     controllers.Application.index
+GET        /containers           controllers.Application.containers
+GET        /api/containers       controllers.Application.getContainers
 
 # ClientConnection websocket
 GET        /stream/:email        controllers.Application.stream(email)

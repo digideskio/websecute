@@ -1,0 +1,8 @@
+@()(implicit req: RequestHeader)
+
+@main("Containers") {
+    <h4>Containers (<span data-bind="text: containers().length"></span>)</h4>
+    <ul data-bind="foreach: containers">
+        <li data-bind="text: name"></li>
+    </ul>
+}
