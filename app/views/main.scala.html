@@ -1,4 +1,4 @@
-@(title: String)(content: Html)(implicit req: RequestHeader)
+@(title: String, scripts: Html = Html(""))(content: Html)(implicit req: RequestHeader)
 
 <!DOCTYPE html>
 
@@ -8,10 +8,10 @@
         <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
         @helper.javascriptRouter("jsRoutes")(
-            routes.javascript.Application.stream
+            routes.javascript.Application.stream,
+            routes.javascript.Application.getContainers
         )
-        <script data-main="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript"
-                src="@routes.Assets.versioned("lib/requirejs/require.js")"></script>
+        @scripts
     </head>
     <body>
         @content

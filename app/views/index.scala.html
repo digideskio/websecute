@@ -1,6 +1,15 @@
 @(message: String)(implicit req: RequestHeader)
 
-@main("Welcome to Play") {
+@scripts = {
+    <script type="text/javascript" src="@routes.Assets.versioned("lib/requirejs/require.js")"></script>
+    <script>
+        requirejs(['@routes.Assets.versioned("javascripts/common.js")'], function(common) {
+            requirejs(['./assets/javascripts/app/indexPage'])
+        });
+    </script>
+}
+
+@main("Welcome to Play", scripts) {
 
     <div data-bind="text: connecting"></div>
     <div data-bind="text: messages().length"></div>

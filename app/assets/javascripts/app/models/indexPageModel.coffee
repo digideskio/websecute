@@ -1,12 +1,12 @@
 #
-# The main page.
+# The index page.
 #
 # This class handles most of the user interactions with the buttons/menus/forms on the page, as well as manages
 # the WebSocket connection.  It delegates to other classes to manage everything else.
 #
-define ["knockout", "dockerClient"], (ko, DockerClient) ->
+define ["knockout", "../../services/dockerClient"], (ko, DockerClient) ->
 
-  class MainPageModel
+  class IndexPageModel
     constructor: () ->
       @dockerClient = ko.observable()
       @connecting = ko.observable("Not connected")
@@ -37,4 +37,4 @@ define ["knockout", "dockerClient"], (ko, DockerClient) ->
     dockerContainers: ->
       @dockerClient().containers()
 
-  return MainPageModel
+  return IndexPageModel
