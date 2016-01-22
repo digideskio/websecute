@@ -5,8 +5,10 @@
 <html lang="en">
     <head>
         <title>@title</title>
-        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("lib/bootstrap/css/bootstrap.css")"/>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("lib/bootstrap/css/bootstrap-theme.css")"/>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
         @helper.javascriptRouter("jsRoutes")(
             routes.javascript.Application.stream,
             routes.javascript.Application.getContainers
@@ -14,6 +16,8 @@
         @scripts
     </head>
     <body>
-        @content
+        <div class="content">
+            @content
+        </div>
     </body>
 </html>

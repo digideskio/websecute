@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
   "com.google.code.findbugs" % "jsr305" % "1.3.+",
   "com.github.grantzvolsky" % "docker-java" % "3.0.0-SNAPSHOT",
   "org.webjars" % "bootstrap" % "3.0.0",
-  "org.webjars" % "knockout" % "2.3.0",
+  "org.webjars" % "knockout" % "3.4.0",
   "org.webjars" % "requirejs" % "2.1.11-1",
   "org.webjars" % "rjs" % "2.1.11-1-trireme" % "test"
 )

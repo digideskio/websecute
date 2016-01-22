@@ -9,9 +9,35 @@
     </script>
 }
 
+@sidebar = {
+    <div class="col-md-2">
+        <div data-bind="foreach: containers, includedestroyed: true" class="list-group">
+            <a data-bind="click: function(){$root.showContainer($index())}" href="#" class="list-group-item">
+                <h4 data-bind="text: name" class="list-group-item-heading"></h4>
+                <p data-bind="text: status" class="list-group-item-text"></p>
+            </a>
+        </div>
+    </div>
+}
+
+@content = {
+    <div class="col-md-10">
+        <div class="row">
+            <button data-bind="click: startSelectedContainer" type="button" class="btn btn-primary">Start</button>
+            <button data-bind="click: execInSelectedContainer" type="button" class="btn btn-primary">Exec</button>
+            <button data-bind="click: stopSelectedContainer" type="button" class="btn btn-warning">Stop</button>
+            <button data-bind="click: deleteSelectedContainer" type="button" class="btn btn-danger">Delete</button>
+        </div>
+        <div class="row top-buffer">
+            <pre data-bind="text: selectedContJson"></pre>
+        </div>
+    </div>
+}
+
 @main("Containers", scripts) {
     <h4>Containers (<span data-bind="text: containers().length"></span>)</h4>
-    <ul data-bind="foreach: containers">
-        <li data-bind="text: name"></li>
-    </ul>
+    <div class="row">
+        @sidebar
+        @content
+    </div>
 }
