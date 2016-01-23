@@ -4,37 +4,29 @@
 # This class handles most of the user interactions with the buttons/menus/forms on the page, as well as manages
 # the WebSocket connection.  It delegates to other classes to manage everything else.
 #
-define ["knockout", "../../services/dockerClient"], (ko, DockerClient) ->
+define ["knockout", "../../services/dockerClient", "../../services/websocket"], (ko, DockerClient, WebSocketFacade) ->
 
   class IndexPageModel
     constructor: () ->
-      @dockerClient = ko.observable()
+      @dockerClient = new DockerClient()
       @connecting = ko.observable("Not connected")
       @messages = ko.observableArray()
       @connect()
 
     # Connect function. Connects to the websocket, and sets up callbacks.
     connect: ->
-      @ws = new WebSocket(jsRoutes.controllers.Application.stream("anonymous@gmail.com").webSocketURL())
+      that = this
 
-      @ws.onopen = (event) =>
-        @dockerClient(new DockerClient(@ws))
-        @connecting("Connected")
-
-      @ws.onmessage = (event) =>
-        json = JSON.parse(event.data)
-        if (json.message).startsWith "Docker"
-          res = @dockerClient().handleResult(json.message, JSON.parse(json.data))
-          @messages.unshift({ message: JSON.stringify(res, null, ' ') })
-
-    disconnect: ->
-      @ws.close()
+      @wsf = new WebSocketFacade("anonymous@gmail.com")
+      @wsf.onMessageFunc = (message, data) ->
+        if (message).startsWith "Docker"
+          that.messages.unshift({ message: JSON.stringify(JSON.parse(data), null, ' ') })
 
     dockerInfo: ->
-      @dockerClient().info()
+      @dockerClient.info(@wsf)
     dockerImages: ->
-      @dockerClient().images()
+      @dockerClient.images(@wsf)
     dockerContainers: ->
-      @dockerClient().containers()
+      @dockerClient.containers(@wsf)
 
   return IndexPageModel

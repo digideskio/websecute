@@ -1,20 +1,28 @@
-define ["knockout", "../../services/dockerClient"], (ko, DockerClient) ->
+define ["knockout", "../../services/dockerClient", "../../services/websocket"], (ko, DockerClient, WebSocketFacade) ->
 
   class ContainersPageModel
     that = this
 
     constructor: () ->
+      that = this
+      @dockerClient = new DockerClient()
+
       @rawContainers = Array()
       @containers = ko.observableArray([])
       @selectedCont = 0
       @selectedContJson = ko.observable()
 
-      @getContainers()
+      @connect()
 
-    getContainers: () ->
-      that = this # TODO: Why is this necessary?
-      $.getJSON jsRoutes.controllers.Application.getContainers().url, (data) ->
-        that.loadContainers(data)
+    connect: () ->
+      @wsf = new WebSocketFacade("anonymous@gmail.com")
+
+      @wsf.onOpenFunc = (event) ->
+        that.dockerClient.containers(that.wsf)
+
+      @wsf.onMessageFunc = (message, data) ->
+        if (message).startsWith "Docker"
+          that.loadContainers(JSON.parse(data))
 
     loadContainers: (data) ->
       for container in data
