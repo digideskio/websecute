@@ -21,20 +21,25 @@ define ["knockout", "../../services/dockerClient", "../../services/websocket"], 
         that.dockerClient.containers(that.wsf)
 
       @wsf.onMessageFunc = (message, data) ->
-        if (message).startsWith "Docker"
+        if (message).startsWith "DockerContainers"
           that.loadContainers(JSON.parse(data))
+        if (message).startsWith "DockerStartContainer"
+          console.log("DockerStartContainer. It does not indicate success or failure.")
 
     loadContainers: (data) ->
+      that.rawContainers = []
+      that.containers.removeAll()
       for container in data
-        that.rawContainers.push(JSON.stringify(container, null, ' '))
+        that.rawContainers.push(container)
         that.containers.push({name: container.names[0], status: container.status})
+      @showContainer(@selectedCont)
 
     showContainer: (index) ->
       that.selectedCont = index
-      that.selectedContJson(that.rawContainers[that.selectedCont])
+      that.selectedContJson(JSON.stringify(that.rawContainers[that.selectedCont], null, ' '))
 
     startSelectedContainer: ->
-      # TODO
+      that.dockerClient.start(that.wsf, that.rawContainers[that.selectedCont].id)
 
     execInSelectedContainer: ->
       console.log("execInSelectedContainer")

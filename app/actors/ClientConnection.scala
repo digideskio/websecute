@@ -20,6 +20,7 @@ object ClientConnection {
   case class DockerInfo(info: String) extends ClientEvent
   case class DockerImages(images: String) extends ClientEvent
   case class DockerContainers(containers: String) extends ClientEvent
+  case class DockerStartContainer(container: String) extends ClientEvent
 
   /*
    * JSON serialisers/deserialisers for the above messages
@@ -31,12 +32,14 @@ object ClientConnection {
         case "DockerInfo" => DockerInfo.dockerInfoFormat.map(identity)
         case "DockerImages" => DockerImages.dockerImagesFormat.map(identity)
         case "DockerContainers" => DockerContainers.dockerContainersFormat.map(identity)
+        case "DockerStartContainer" => DockerStartContainer.dockerStartContainerFormat.map(identity)
         case other => Reads(_ => JsError("Unknown client event: " + other))
       },
       Writes {
         case dinfo: DockerInfo => DockerInfo.dockerInfoFormat.writes(dinfo)
         case dimgs: DockerImages => DockerImages.dockerImagesFormat.writes(dimgs)
         case dconts: DockerContainers => DockerContainers.dockerContainersFormat.writes(dconts)
+        case dstartcont: DockerStartContainer => DockerStartContainer.dockerStartContainerFormat.writes(dstartcont)
       }
     )
 
@@ -60,6 +63,7 @@ object ClientConnection {
       case ("DockerInfo", info) => DockerInfo(info)
     }, dockerInfo => ("DockerInfo", dockerInfo.info))
   }
+
   object DockerImages {
     implicit def dockerImagesFormat: Format[DockerImages] = (
       (__ \ "message").format[String] ~
@@ -68,6 +72,7 @@ object ClientConnection {
       case ("DockerImages", images) => DockerImages(images)
     }, dockerImages => ("DockerImages", dockerImages.images))
   }
+
   object DockerContainers {
     implicit def dockerContainersFormat: Format[DockerContainers] = (
       (__ \ "message").format[String] ~
@@ -75,6 +80,15 @@ object ClientConnection {
       ).apply({
       case ("DockerContainers", containers) => DockerContainers(containers)
     }, dockerContainers => ("DockerContainers", dockerContainers.containers))
+  }
+
+  object DockerStartContainer {
+    implicit def dockerStartContainerFormat: Format[DockerStartContainer] = (
+      (__ \ "message").format[String] ~
+        (__ \ "data").format[String]
+      ).apply({
+      case ("DockerStartContainer", container) => DockerStartContainer(container)
+    }, dockerStartContainer => ("DockerStartContainer", dockerStartContainer.container))
   }
 }
 
@@ -103,7 +117,12 @@ class ClientConnection(topLevelActor: ActorRef, email: String, upstream: ActorRe
       upstream ! DockerContainers(res.containers)
     }
 
+    case DockerStartContainer(container: String) => topLevelActor ! StartContainer(container)
+    case res: StartContainerRes => {
+      upstream ! DockerStartContainer(res.container)
+    }
+
     case m: String => log.error("Unknown string message: " + m)
-    case _ => log.error("Unknown message")
+    case m => log.error(m.toString)
   }
 }

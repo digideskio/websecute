@@ -5,7 +5,6 @@ define () ->
   class DockerClient
     constructor: () ->
 
-    # Send the DockerInfo command
     info: (wsFacade) ->
       wsFacade.send({
         message: "DockerInfo"
@@ -22,6 +21,12 @@ define () ->
       wsFacade.send({
         message: "DockerContainers"
         data: ""
+      })
+
+    start: (wsFacade, containerId) ->
+      wsFacade.send({
+        message: "DockerStartContainer"
+        data: "" + containerId
       })
 
   return DockerClient

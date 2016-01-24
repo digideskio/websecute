@@ -43,6 +43,13 @@ class DockerClient(version: String, uri: String) extends Actor {
     case GetInfo => docker.getInfo pipeTo sender
     case GetImages => docker.getImages pipeTo sender
     case GetContainers => docker.getContainers pipeTo sender
+    case StartContainer(id: String) => { // Start container & send updated containers
+      val that = sender
+      docker.startContainer(id) map { startRes =>
+        context.parent.tell(GetContainers, that)
+        startRes // This result is not used in the UI. TODO: perhaps refactor
+      } pipeTo sender
+    }
   }
 }
 
@@ -54,7 +61,8 @@ object DockerClientProtocol {
   case class GetImagesRes(images: String)
 
   case object GetContainers
-  case class GetContainersRes(containers: String) {
-    def unapply() = containers
-  }
+  case class GetContainersRes(containers: String)
+
+  case class StartContainer(id: String)
+  case class StartContainerRes(container: String)
 }

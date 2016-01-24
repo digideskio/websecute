@@ -13,21 +13,28 @@ case class DockerService(dockerClientConfig: DockerClientConfig) extends DockerS
 
   val docker = DockerClientBuilder.getInstance(dockerClientConfig).build()
 
-  def getInfo: Future[GetInfoRes] = Future {
+  override def getInfo: Future[GetInfoRes] = Future {
     blocking {
       GetInfoRes(docker.infoCmd().exec().toString)
     }
   }
 
-  def getImages: Future[GetImagesRes] = Future {
+  override def getImages: Future[GetImagesRes] = Future {
     blocking {
       GetImagesRes(docker.listImagesCmd().exec().toString)
     }
   }
 
-  def getContainers: Future[GetContainersRes] = Future {
+  override def getContainers: Future[GetContainersRes] = Future {
     blocking {
       GetContainersRes(docker.listContainersCmd().withShowAll(true).exec().toString)
+    }
+  }
+
+  override def startContainer(id: String): Future[StartContainerRes] = Future {
+    blocking {
+      docker.startContainerCmd(id).exec()
+      StartContainerRes(id)
     }
   }
 }
@@ -38,4 +45,6 @@ trait DockerServiceCalls {
   def getImages: Future[GetImagesRes]
 
   def getContainers: Future[GetContainersRes]
+
+  def startContainer(id: String): Future[StartContainerRes]
 }
