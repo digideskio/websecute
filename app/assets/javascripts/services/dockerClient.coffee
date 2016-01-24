@@ -29,4 +29,10 @@ define () ->
         data: "" + containerId
       })
 
+    stop: (wsFacade, containerId) ->
+      wsFacade.send({
+        message: "DockerStopContainer"
+        data: "" + containerId
+      })
+
   return DockerClient

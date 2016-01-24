@@ -45,7 +45,7 @@ define ["knockout", "../../services/dockerClient", "../../services/websocket"], 
       console.log("execInSelectedContainer")
 
     stopSelectedContainer: ->
-      console.log("stopSelectedContainer")
+      that.dockerClient.stop(that.wsf, that.rawContainers[that.selectedCont].id)
 
     deleteSelectedContainer: ->
       console.log("deleteSelectedContainer")

@@ -50,6 +50,13 @@ class DockerClient(version: String, uri: String) extends Actor {
         startRes // This result is not used in the UI. TODO: perhaps refactor
       } pipeTo sender
     }
+    case StopContainer(id: String) => { // Stop container & send updated containers
+      val that = sender
+      docker.stopContainer(id) map { stopRes =>
+        context.parent.tell(GetContainers, that)
+        stopRes // This result is not used in the UI. TODO: perhaps refactor
+      } pipeTo sender
+    }
   }
 }
 
@@ -64,5 +71,8 @@ object DockerClientProtocol {
   case class GetContainersRes(containers: String)
 
   case class StartContainer(id: String)
-  case class StartContainerRes(container: String)
+  case class StartContainerRes(id: String)
+
+  case class StopContainer(id: String)
+  case class StopContainerRes(id: String)
 }

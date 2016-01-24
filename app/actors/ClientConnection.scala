@@ -20,7 +20,8 @@ object ClientConnection {
   case class DockerInfo(info: String) extends ClientEvent
   case class DockerImages(images: String) extends ClientEvent
   case class DockerContainers(containers: String) extends ClientEvent
-  case class DockerStartContainer(container: String) extends ClientEvent
+  case class DockerStartContainer(id: String) extends ClientEvent
+  case class DockerStopContainer(id: String) extends ClientEvent
 
   /*
    * JSON serialisers/deserialisers for the above messages
@@ -33,6 +34,7 @@ object ClientConnection {
         case "DockerImages" => DockerImages.dockerImagesFormat.map(identity)
         case "DockerContainers" => DockerContainers.dockerContainersFormat.map(identity)
         case "DockerStartContainer" => DockerStartContainer.dockerStartContainerFormat.map(identity)
+        case "DockerStopContainer" => DockerStopContainer.dockerStopContainerFormat.map(identity)
         case other => Reads(_ => JsError("Unknown client event: " + other))
       },
       Writes {
@@ -40,6 +42,7 @@ object ClientConnection {
         case dimgs: DockerImages => DockerImages.dockerImagesFormat.writes(dimgs)
         case dconts: DockerContainers => DockerContainers.dockerContainersFormat.writes(dconts)
         case dstartcont: DockerStartContainer => DockerStartContainer.dockerStartContainerFormat.writes(dstartcont)
+        case dstopcont: DockerStopContainer => DockerStopContainer.dockerStopContainerFormat.writes(dstopcont)
       }
     )
 
@@ -87,8 +90,17 @@ object ClientConnection {
       (__ \ "message").format[String] ~
         (__ \ "data").format[String]
       ).apply({
-      case ("DockerStartContainer", container) => DockerStartContainer(container)
-    }, dockerStartContainer => ("DockerStartContainer", dockerStartContainer.container))
+      case ("DockerStartContainer", id) => DockerStartContainer(id)
+    }, dockerStartContainer => ("DockerStartContainer", dockerStartContainer.id))
+  }
+
+  object DockerStopContainer {
+    implicit def dockerStopContainerFormat: Format[DockerStopContainer] = (
+      (__ \ "message").format[String] ~
+        (__ \ "data").format[String]
+      ).apply({
+      case ("DockerStopContainer", id) => DockerStopContainer(id)
+    }, dockerStopContainer => ("DockerStopContainer", dockerStopContainer.id))
   }
 }
 
@@ -117,9 +129,14 @@ class ClientConnection(topLevelActor: ActorRef, email: String, upstream: ActorRe
       upstream ! DockerContainers(res.containers)
     }
 
-    case DockerStartContainer(container: String) => topLevelActor ! StartContainer(container)
+    case DockerStartContainer(id: String) => topLevelActor ! StartContainer(id)
     case res: StartContainerRes => {
-      upstream ! DockerStartContainer(res.container)
+      upstream ! DockerStartContainer(res.id)
+    }
+
+    case DockerStopContainer(id: String) => topLevelActor ! StopContainer(id)
+    case res: StopContainerRes => {
+      upstream ! DockerStopContainer(res.id)
     }
 
     case m: String => log.error("Unknown string message: " + m)

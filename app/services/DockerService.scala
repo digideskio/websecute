@@ -37,6 +37,13 @@ case class DockerService(dockerClientConfig: DockerClientConfig) extends DockerS
       StartContainerRes(id)
     }
   }
+
+  override def stopContainer(id: String): Future[StopContainerRes] = Future {
+    blocking {
+      docker.stopContainerCmd(id).exec()
+      StopContainerRes(id)
+    }
+  }
 }
 
 trait DockerServiceCalls {
@@ -47,4 +54,6 @@ trait DockerServiceCalls {
   def getContainers: Future[GetContainersRes]
 
   def startContainer(id: String): Future[StartContainerRes]
+
+  def stopContainer(id: String): Future[StopContainerRes]
 }
