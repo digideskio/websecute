@@ -17,10 +17,19 @@ define () ->
         data: ""
       })
 
-    containers: (wsFacade) ->
+    containers: (wsFacade, filterKey, filterValue) ->
+      if (typeof filterKey == 'undefined')
+        filterKey = ""
+        console.warn("filterKey undefined. Using default.")
+      if (typeof filterValue == 'undefined')
+        filterValue = ""
+        console.warn("filterValue undefined. Using default.")
       wsFacade.send({
         message: "DockerContainers"
-        data: ""
+        data: JSON.stringify({
+          filterKey: filterKey
+          filterValue: filterValue
+        })
       })
 
     start: (wsFacade, containerId) ->

@@ -1,6 +1,8 @@
 package services
 
+import actors.ClientConnection.Filter
 import actors.DockerClientProtocol._
+import com.github.dockerjava.api.model.Filters
 import com.github.dockerjava.core.{DockerClientBuilder, DockerClientConfig}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,9 +27,10 @@ case class DockerService(dockerClientConfig: DockerClientConfig) extends DockerS
     }
   }
 
-  override def getContainers: Future[GetContainersRes] = Future {
+  override def getContainers(filter: Filter): Future[GetContainersRes] = Future {
     blocking {
-      GetContainersRes(docker.listContainersCmd().withShowAll(true).exec().toString)
+      if (filter.key == "") GetContainersRes(docker.listContainersCmd().withShowAll(true).exec().toString)
+      else GetContainersRes(docker.listContainersCmd().withFilters(new Filters().withFilter(filter.key, filter.value)).exec().toString)
     }
   }
 
@@ -51,7 +54,7 @@ trait DockerServiceCalls {
 
   def getImages: Future[GetImagesRes]
 
-  def getContainers: Future[GetContainersRes]
+  def getContainers(filter: Filter): Future[GetContainersRes]
 
   def startContainer(id: String): Future[StartContainerRes]
 

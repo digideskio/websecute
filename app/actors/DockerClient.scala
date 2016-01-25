@@ -1,5 +1,6 @@
 package actors
 
+import actors.ClientConnection.Filter
 import akka.event.LoggingReceive
 
 import scala.concurrent.duration._
@@ -42,21 +43,9 @@ class DockerClient(version: String, uri: String) extends Actor {
   def receive = LoggingReceive {
     case GetInfo => docker.getInfo pipeTo sender
     case GetImages => docker.getImages pipeTo sender
-    case GetContainers => docker.getContainers pipeTo sender
-    case StartContainer(id: String) => { // Start container & send updated containers
-      val that = sender
-      docker.startContainer(id) map { startRes =>
-        context.parent.tell(GetContainers, that)
-        startRes // This result is not used in the UI. TODO: perhaps refactor
-      } pipeTo sender
-    }
-    case StopContainer(id: String) => { // Stop container & send updated containers
-      val that = sender
-      docker.stopContainer(id) map { stopRes =>
-        context.parent.tell(GetContainers, that)
-        stopRes // This result is not used in the UI. TODO: perhaps refactor
-      } pipeTo sender
-    }
+    case GetContainers(filter) => docker.getContainers(filter) pipeTo sender
+    case StartContainer(id: String) => docker.startContainer(id) pipeTo sender
+    case StopContainer(id: String) => docker.stopContainer(id) pipeTo sender
   }
 }
 
@@ -67,7 +56,7 @@ object DockerClientProtocol {
   case object GetImages
   case class GetImagesRes(images: String)
 
-  case object GetContainers
+  case class GetContainers(filter: Filter)
   case class GetContainersRes(containers: String)
 
   case class StartContainer(id: String)

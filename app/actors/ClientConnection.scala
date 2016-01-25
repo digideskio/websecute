@@ -102,6 +102,13 @@ object ClientConnection {
       case ("DockerStopContainer", id) => DockerStopContainer(id)
     }, dockerStopContainer => ("DockerStopContainer", dockerStopContainer.id))
   }
+
+  case class Filter(key: String, value: String)
+
+  implicit val filterReads: Reads[Filter] = (
+    (__ \ "filterKey").read[String] ~
+      (__ \ "filterValue").read[String]
+    )(Filter.apply _)
 }
 
 /**
@@ -112,6 +119,8 @@ object ClientConnection {
  */
 class ClientConnection(topLevelActor: ActorRef, email: String, upstream: ActorRef) extends Actor with ActorLogging {
   import ClientConnection._
+
+  var filter = Filter("", "")
 
   def receive = { // TODO: Refactor unmarshalling. This file is getting too big.
     case DockerInfo(info: String) => topLevelActor ! GetInfo
@@ -124,18 +133,26 @@ class ClientConnection(topLevelActor: ActorRef, email: String, upstream: ActorRe
       upstream ! DockerImages(res.images)
     }
 
-    case DockerContainers(containers: String) => topLevelActor ! GetContainers
+    // Store filter if valid and get containers
+    case DockerContainers(containers: String) => {
+      Json.parse(containers).validate[Filter] match {
+        case s: JsSuccess[Filter] => filter = s.get
+      }
+      topLevelActor ! GetContainers(filter)
+    }
     case res: GetContainersRes => {
       upstream ! DockerContainers(res.containers)
     }
 
     case DockerStartContainer(id: String) => topLevelActor ! StartContainer(id)
     case res: StartContainerRes => {
+      topLevelActor ! GetContainers(filter)
       upstream ! DockerStartContainer(res.id)
     }
 
     case DockerStopContainer(id: String) => topLevelActor ! StopContainer(id)
     case res: StopContainerRes => {
+      topLevelActor ! GetContainers(filter)
       upstream ! DockerStopContainer(res.id)
     }
 

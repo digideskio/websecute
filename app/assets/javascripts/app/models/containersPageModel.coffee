@@ -12,19 +12,25 @@ define ["knockout", "../../services/dockerClient", "../../services/websocket"], 
       @selectedCont = 0
       @selectedContJson = ko.observable()
 
+      @filterKey = ko.observable("")
+      @filterValue = ko.observable("")
+
       @connect()
 
     connect: () ->
       @wsf = new WebSocketFacade("anonymous@gmail.com")
 
       @wsf.onOpenFunc = (event) ->
-        that.dockerClient.containers(that.wsf)
+        that.getContainers()
 
       @wsf.onMessageFunc = (message, data) ->
         if (message).startsWith "DockerContainers"
           that.loadContainers(JSON.parse(data))
         if (message).startsWith "DockerStartContainer"
           console.log("DockerStartContainer. It does not indicate success or failure.")
+
+    getContainers: () ->
+      that.dockerClient.containers(that.wsf, that.filterKey(), that.filterValue())
 
     loadContainers: (data) ->
       that.rawContainers = []
