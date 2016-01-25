@@ -7,10 +7,8 @@ define ["knockout", "../../services/dockerClient", "../../services/websocket"], 
       that = this
       @dockerClient = new DockerClient()
 
-      @rawContainers = Array()
       @containers = ko.observableArray([])
-      @selectedCont = 0
-      @selectedContJson = ko.observable()
+      @selectedCont = ko.observable({"command":"command","created":0,"id":"id","image":"image","names":["/name"],"ports":[],"labels":null,"status":"status"})
 
       @filterKey = ko.observable("")
       @filterValue = ko.observable("")
@@ -33,25 +31,18 @@ define ["knockout", "../../services/dockerClient", "../../services/websocket"], 
       that.dockerClient.containers(that.wsf, that.filterKey(), that.filterValue())
 
     loadContainers: (data) ->
-      that.rawContainers = []
       that.containers.removeAll()
       for container in data
-        that.rawContainers.push(container)
-        that.containers.push({name: container.names[0], status: container.status})
-      @showContainer(@selectedCont)
-
-    showContainer: (index) ->
-      that.selectedCont = index
-      that.selectedContJson(JSON.stringify(that.rawContainers[that.selectedCont], null, ' '))
+        that.containers.push(container)
 
     startSelectedContainer: ->
-      that.dockerClient.start(that.wsf, that.rawContainers[that.selectedCont].id)
+      that.dockerClient.start(that.wsf, that.selectedCont().id)
 
     execInSelectedContainer: ->
       console.log("execInSelectedContainer")
 
     stopSelectedContainer: ->
-      that.dockerClient.stop(that.wsf, that.rawContainers[that.selectedCont].id)
+      that.dockerClient.stop(that.wsf, that.selectedCont().id)
 
     deleteSelectedContainer: ->
       console.log("deleteSelectedContainer")

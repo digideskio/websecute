@@ -10,11 +10,12 @@
 }
 
 @sidebar = {
-    <div class="col-md-2">
+    <div class="col-md-2 top-buffer">
+        <h3>Containers (<span data-bind="text: containers().length"></span>)</h3>
         @filterForm
-        <div data-bind="foreach: containers, includedestroyed: true" class="list-group">
-            <a data-bind="click: function(){$root.showContainer($index())}" href="#" class="list-group-item">
-                <h4 data-bind="text: name" class="list-group-item-heading"></h4>
+        <div data-bind="foreach: containers" class="list-group top-buffer">
+            <a data-bind="click: function(){$root.selectedCont($data)}" href="#" class="list-group-item">
+                <h4 data-bind="text: names[0]" class="list-group-item-heading"></h4>
                 <p data-bind="text: status" class="list-group-item-text"></p>
             </a>
         </div>
@@ -38,19 +39,21 @@
 @content = {
     <div class="col-md-10">
         <div class="row">
+            <h3 data-bind="text: selectedCont().names[0]"></h3>
+        </div>
+        <div class="row">
             <button data-bind="click: startSelectedContainer" type="button" class="btn btn-primary">Start</button>
             <button data-bind="click: execInSelectedContainer" type="button" class="btn btn-primary">Exec</button>
             <button data-bind="click: stopSelectedContainer" type="button" class="btn btn-warning">Stop</button>
             <button data-bind="click: deleteSelectedContainer" type="button" class="btn btn-danger">Delete</button>
         </div>
         <div class="row top-buffer">
-            <pre data-bind="text: selectedContJson"></pre>
+            <pre data-bind="text: JSON.stringify(selectedCont(), null, ' ')"></pre>
         </div>
     </div>
 }
 
 @main("Containers", scripts) {
-    <h4>Containers (<span data-bind="text: containers().length"></span>)</h4>
     <div class="row">
         @sidebar
         @content
