@@ -1,6 +1,7 @@
 package services
 
 import actors.ClientConnection
+import actors.ClientConnection.Filter
 import scala.concurrent.duration._
 import actors.DockerClientProtocol._
 import actors.DockerClientSupervisor
@@ -46,7 +47,7 @@ class DockerServiceSpec extends TestKit(ActorSystem("testDockerService",
       }
     }
     "get containers from the Docker node" in {
-      dockerClientSupervisor ! GetContainers
+      dockerClientSupervisor ! GetContainers(Filter("", ""))
       expectMsgPF() {
         case GetContainersRes(res: String) => res must include ("ports")
       }
