@@ -1,7 +1,7 @@
 package services
 
-import actors.ClientConnection.Filter
-import actors.DockerClientProtocol._
+import actors.DockerWSRequest.Filter
+import actors.DockerActor._
 import com.github.dockerjava.api.model.Filters
 import com.github.dockerjava.core.{DockerClientBuilder, DockerClientConfig}
 
@@ -12,51 +12,50 @@ import scala.concurrent.{Future, blocking}
   * This service handles communication with the Docker API using the docker-java library.
   * */
 case class DockerService(dockerClientConfig: DockerClientConfig) extends DockerServiceCalls {
-
   val docker = DockerClientBuilder.getInstance(dockerClientConfig).build()
 
-  override def getInfo: Future[GetInfoRes] = Future {
+  override def getInfo: Future[InternalResponse] = Future {
     blocking {
-      GetInfoRes(docker.infoCmd().exec().toString)
+      InternalInfo.response(docker.infoCmd().exec().toString)
     }
   }
 
-  override def getImages: Future[GetImagesRes] = Future {
+  override def getImages: Future[InternalResponse] = Future {
     blocking {
-      GetImagesRes(docker.listImagesCmd().exec().toString)
+      InternalImages.response(docker.listImagesCmd().exec().toString)
     }
   }
 
-  override def getContainers(filter: Filter): Future[GetContainersRes] = Future {
+  override def getContainers(filter: Filter): Future[InternalResponse] = Future {
     blocking {
-      if (filter.key == "") GetContainersRes(docker.listContainersCmd().withShowAll(true).exec().toString)
-      else GetContainersRes(docker.listContainersCmd().withFilters(new Filters().withFilter(filter.key, filter.value)).exec().toString)
+      if (filter.key == "") InternalContainers(filter).response(docker.listContainersCmd().withShowAll(true).exec().toString)
+      else InternalContainers(filter).response(docker.listContainersCmd().withFilters(new Filters().withFilter(filter.key, filter.value)).exec().toString)
     }
   }
 
-  override def startContainer(id: String): Future[StartContainerRes] = Future {
+  override def startContainer(id: String): Future[InternalResponse] = Future {
     blocking {
       docker.startContainerCmd(id).exec()
-      StartContainerRes(id)
+      InternalStart(id).response(true) // TODO exception handling
     }
   }
 
-  override def stopContainer(id: String): Future[StopContainerRes] = Future {
+  override def stopContainer(id: String): Future[InternalResponse] = Future {
     blocking {
       docker.stopContainerCmd(id).exec()
-      StopContainerRes(id)
+      InternalStop(id).response(true) // TODO exception handling
     }
   }
 }
 
 trait DockerServiceCalls {
-  def getInfo: Future[GetInfoRes]
+  def getInfo: Future[InternalResponse]
 
-  def getImages: Future[GetImagesRes]
+  def getImages: Future[InternalResponse]
 
-  def getContainers(filter: Filter): Future[GetContainersRes]
+  def getContainers(filter: Filter): Future[InternalResponse]
 
-  def startContainer(id: String): Future[StartContainerRes]
+  def startContainer(id: String): Future[InternalResponse]
 
-  def stopContainer(id: String): Future[StopContainerRes]
+  def stopContainer(id: String): Future[InternalResponse]
 }

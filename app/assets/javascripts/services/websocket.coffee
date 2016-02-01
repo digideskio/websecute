@@ -35,7 +35,7 @@ define () ->
     onMessage: (event) ->
       debug && console.info("WS message: ", event)
       json = JSON.parse(event.data)
-      that.onMessageFunc(json.message, json.data)
+      that.onMessageFunc(json.type, json.event)
 
     onError: (event) ->
       debug && console.error("WS error", event)

@@ -7,7 +7,9 @@
 define ["knockout", "../../services/dockerClient", "../../services/websocket"], (ko, DockerClient, WebSocketFacade) ->
 
   class IndexPageModel
+    that = this
     constructor: () ->
+      that = this
       @dockerClient = new DockerClient()
       @connecting = ko.observable("Not connected")
       @messages = ko.observableArray()
@@ -15,12 +17,20 @@ define ["knockout", "../../services/dockerClient", "../../services/websocket"], 
 
     # Connect function. Connects to the websocket, and sets up callbacks.
     connect: ->
-      that = this
-
       @wsf = new WebSocketFacade("anonymous@gmail.com")
-      @wsf.onMessageFunc = (message, data) ->
-        if (message).startsWith "Docker"
-          that.messages.unshift({ message: JSON.stringify(JSON.parse(data), null, ' ') })
+      @wsf.onMessageFunc = (type, event) ->
+        if (type).startsWith "dockerResponse"
+          that.handleDockerResponse(event)
+
+    handleDockerResponse: (event) ->
+      t = event.type
+      r = event.result
+      if t.startsWith("infoResponse")
+        that.messages.unshift({ message: JSON.stringify(JSON.parse(r), null, ' ') })
+      else if t.startsWith("imagesResponse")
+        that.messages.unshift({ message: JSON.stringify(JSON.parse(r), null, ' ') })
+      else if t.startsWith("containersResponse")
+        that.messages.unshift({ message: JSON.stringify(JSON.parse(r), null, ' ') })
 
     dockerInfo: ->
       @dockerClient.info(@wsf)

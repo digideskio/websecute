@@ -7,14 +7,14 @@ define () ->
 
     info: (wsFacade) ->
       wsFacade.send({
-        message: "DockerInfo"
-        data: ""
+        request: "DockerWSRequest"
+        type: "info"
       })
 
     images: (wsFacade) ->
       wsFacade.send({
-        message: "DockerImages"
-        data: ""
+        request: "DockerWSRequest"
+        type: "images"
       })
 
     containers: (wsFacade, filterKey, filterValue) ->
@@ -25,23 +25,26 @@ define () ->
         filterValue = ""
         console.warn("filterValue undefined. Using default.")
       wsFacade.send({
-        message: "DockerContainers"
-        data: JSON.stringify({
+        request: "DockerWSRequest"
+        type: "containers"
+        filter: {
           filterKey: filterKey
           filterValue: filterValue
-        })
+        }
       })
 
     start: (wsFacade, containerId) ->
       wsFacade.send({
-        message: "DockerStartContainer"
-        data: "" + containerId
+        request: "DockerWSRequest"
+        type: "start"
+        id: "" + containerId
       })
 
     stop: (wsFacade, containerId) ->
       wsFacade.send({
-        message: "DockerStopContainer"
-        data: "" + containerId
+        request: "DockerWSRequest"
+        type: "stop"
+        id: "" + containerId
       })
 
   return DockerClient

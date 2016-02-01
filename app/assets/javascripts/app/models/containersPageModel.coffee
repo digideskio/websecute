@@ -21,11 +21,16 @@ define ["knockout", "../../services/dockerClient", "../../services/websocket"], 
       @wsf.onOpenFunc = (event) ->
         that.getContainers()
 
-      @wsf.onMessageFunc = (message, data) ->
-        if (message).startsWith "DockerContainers"
-          that.loadContainers(JSON.parse(data))
-        if (message).startsWith "DockerStartContainer"
-          console.log("DockerStartContainer. It does not indicate success or failure.")
+      @wsf.onMessageFunc = (type, event) ->
+        if (type).startsWith "dockerResponse"
+          that.handleDockerResponse(event)
+
+    handleDockerResponse: (event) ->
+      t = event.type
+      r = event.result
+      if t.startsWith("containersResponse")
+        that.loadContainers(JSON.parse(event.result))
+      else console.error("Unhandled " + t, r)
 
     getContainers: () ->
       that.dockerClient.containers(that.wsf, that.filterKey(), that.filterValue())
