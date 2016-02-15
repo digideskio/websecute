@@ -1,5 +1,5 @@
 // inspired by https://github.com/typesafehub/activator/blob/889970aab1f990cc477e4a9e1b3bab6b1897acef/ui/app/activator/NewRelic.scala
-
+// TODO: Rename to DockerWebClient
 package actors
 
 import play.api.libs.functional.syntax._
@@ -62,6 +62,8 @@ object DockerWSRequest {
   case class ContainersResponse(result: String, request: Request) extends Response
   case class StartResponse(result: Boolean, request: Request) extends Response
   case class StopResponse(result: Boolean, request: Request) extends Response
+
+  case class NoWorkersErrorResponse(request: Request) extends Response
 
   // Request reads & writes
 
@@ -139,6 +141,13 @@ object DockerWSRequest {
         "request" -> in.request
       )))
 
+  implicit val dockerWsNoWorkersErrorResponseWrites: Writes[NoWorkersErrorResponse] =
+    emitResponse(responseTag, responseSubTag)(in => Json.obj("event" ->
+      Json.obj(
+        "type" -> "noWorkersErrorResponse",
+        "request" -> in.request
+      )))
+
   implicit val dockerWsResponseWrites: Writes[Response] =
     Writes {
       case x: InfoResponse => dockerWsInfoResponseWrites.writes(x)
@@ -146,6 +155,7 @@ object DockerWSRequest {
       case x: ContainersResponse => dockerWsContainersResponseWrites.writes(x)
       case x: StartResponse => dockerWsStartResponseWrites.writes(x)
       case x: StopResponse => dockerWsStopResponseWrites.writes(x)
+      case x: NoWorkersErrorResponse => dockerWsNoWorkersErrorResponseWrites.writes(x)
     }
 
   def unapply(in: JsValue): Option[Request] = Json.fromJson[Request](in).asOpt

@@ -30,6 +30,8 @@ define ["knockout", "../../services/dockerClient", "../../services/websocket"], 
       r = event.result
       if t.startsWith("containersResponse")
         that.loadContainers(JSON.parse(event.result))
+      if t.startsWith("noWorkersErrorResponse")
+        alert("noWorkersErrorResponse")
       else console.error("Unhandled " + t, r)
 
     getContainers: () ->

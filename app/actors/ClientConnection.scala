@@ -1,5 +1,7 @@
 package actors
 
+import actors.DockerActor.InternalNoWorkersErrorResponse
+
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import scala.util._
@@ -37,6 +39,7 @@ class ClientConnection(topLevelActor: ActorRef, email: String, upstream: ActorRe
   def askDocker[T <: DockerActor.InternalResponse](msg: DockerActor.InternalRequest, originalMsg: DockerWSRequest.Request)(body: T => Unit)(implicit tag: ClassTag[T]): Unit = {
     topLevelActor.ask(msg).mapTo[DockerActor.InternalResponse].onComplete {
       case Success(`tag`(r)) => body(r)
+      case Success(InternalNoWorkersErrorResponse(r)) => upstream ! Json.toJson(NoWorkersErrorResponse(originalMsg))
       case Failure(f) => log.error(f, "TODO chyba")
     }
   }

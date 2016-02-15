@@ -5,25 +5,37 @@ import akka.event.LoggingReceive
 import scala.concurrent.duration._
 import akka.actor.SupervisorStrategy.stop
 import akka.actor._
-
 import org.apache.commons.lang3.builder.{ToStringBuilder, ToStringStyle}
 import com.github.dockerjava.core.DockerClientConfig
-
 import actors.DockerWSRequest.Filter
+import akka.routing._
+
+object DockerClientSupervisor {
+  case class RegisterWorkerRequest(apiVersion: String, url: String, session: String)
+}
 
 class DockerClientSupervisor() extends Actor {
+  import DockerClientSupervisor._
+  import DockerActor._
   override def supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 3, withinTimeRange = 5 seconds) {
     case m: Exception => stop // TODO: Administrator's log
   }
 
   ToStringBuilder.setDefaultStyle(ToStringStyle.JSON_STYLE)
-  val dockerClientProps = Props(classOf[DockerActor], "1.17", "http://127.0.0.1:4243") // TODO: Customizable?
-  val dockerClient = context.actorOf(dockerClientProps)
+
+  var router = Router(RoundRobinRoutingLogic())
+
+  //self ! RegisterWorkerRequest("1.17", "http://127.0.0.1:4243", "session")
 
   def receive = {
-    case m => {
-      dockerClient forward m
-    }
+    case RegisterWorkerRequest(api, url, session) =>
+      val dockerClientProps = Props(classOf[DockerActor], api, url)
+      val dockerClient = context.actorOf(dockerClientProps)
+      context watch dockerClient
+      router = router.addRoutee(ActorRefRoutee(dockerClient))
+    case m: InternalRequest =>
+      if (router.routees.isEmpty) sender ! InternalNoWorkersErrorResponse(m)
+      router.route(m, sender)
   }
 }
 
@@ -56,6 +68,7 @@ object DockerActor {
     def request: InternalRequest
   }
 
+  case class InternalNoWorkersErrorResponse(request: InternalRequest) extends InternalResponse
   case class InternalInfoResponse(result: String, request: InternalRequest) extends InternalResponse
   case class InternalImagesResponse(result: String, request: InternalRequest) extends InternalResponse
   case class InternalContainersResponse(result: String, request: InternalRequest) extends InternalResponse
