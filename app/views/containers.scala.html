@@ -4,13 +4,13 @@
     <script type="text/javascript" src="@routes.Assets.versioned("lib/requirejs/require.js")"></script>
     <script>
         requirejs(['@routes.Assets.versioned("javascripts/common.js")'], function(common) {
-            requirejs(['./assets/javascripts/app/containersPage'])
+            requirejs(['/assets/javascripts/app/containersPage.js'])
         });
     </script>
 }
 
 @sidebar = {
-    <div class="col-md-2 top-buffer">
+    <div class="col-md-2">
         <h3>Containers (<span data-bind="text: containers().length"></span>)</h3>
         @filterForm
         <div data-bind="foreach: containers" class="list-group top-buffer">

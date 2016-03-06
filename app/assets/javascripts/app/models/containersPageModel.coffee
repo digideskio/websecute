@@ -1,4 +1,4 @@
-define ["knockout", "../../services/dockerClient", "../../services/websocket"], (ko, DockerClient, WebSocketFacade) ->
+define ["knockout", "/assets/javascripts/services/dockerClient.js", "/assets/javascripts/services/websocket.js"], (ko, DockerClient, WebSocketFacade) ->
 
   class ContainersPageModel
     that = this
@@ -31,7 +31,7 @@ define ["knockout", "../../services/dockerClient", "../../services/websocket"], 
       if t.startsWith("containersResponse")
         that.loadContainers(JSON.parse(event.result))
       if t.startsWith("noWorkersErrorResponse")
-        alert("noWorkersErrorResponse")
+        console.error("noWorkersErrorResponse")
       else console.error("Unhandled " + t, r)
 
     getContainers: () ->

@@ -4,7 +4,7 @@
 # This class handles most of the user interactions with the buttons/menus/forms on the page, as well as manages
 # the WebSocket connection.  It delegates to other classes to manage everything else.
 #
-define ["knockout", "../../services/dockerClient", "../../services/websocket"], (ko, DockerClient, WebSocketFacade) ->
+define ["knockout", "/assets/javascripts/services/dockerClient.js", "/assets/javascripts/services/websocket.js"], (ko, DockerClient, WebSocketFacade) ->
 
   class IndexPageModel
     that = this

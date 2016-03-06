@@ -1,6 +1,6 @@
 require [
   "knockout",
-  "./assets/javascripts/app/models/containersPageModel",
+  "/assets/javascripts/app/models/containersPageModel.js",
   "bootstrap"
 ], (ko, ContainersPageModel) ->
 

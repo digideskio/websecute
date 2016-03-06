@@ -3,9 +3,9 @@
 #
 require.config {
   paths: {
-    bootstrap: "./assets/lib/bootstrap/js/bootstrap"
-    jquery: "./assets/lib/jquery/jquery"
-    knockout: "./assets/lib/knockout/knockout"
+    bootstrap: "/assets/lib/bootstrap/js/bootstrap"
+    jquery: "/assets/lib/jquery/jquery"
+    knockout: "/assets/lib/knockout/knockout"
   }
   shim: {
     bootstrap: {
