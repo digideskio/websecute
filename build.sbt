@@ -7,7 +7,6 @@ scalaVersion := "2.11.6"
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 libraryDependencies ++= Seq(
-  jdbc,
   cache,
   ws,
   specs2 % Test,
@@ -19,6 +18,13 @@ libraryDependencies ++= Seq(
   "org.webjars" % "knockout" % "3.4.0",
   "org.webjars" % "requirejs" % "2.1.11-1",
   "org.webjars" % "rjs" % "2.1.11-1-trireme" % "test"
+)
+
+libraryDependencies ++= Seq(
+  //"com.h2database" % "h2" % "1.0.60",
+  "mysql" % "mysql-connector-java" % "5.1.34",
+  "com.typesafe.play" %% "play-slick" % "1.1.1",
+  "com.typesafe.play" %% "play-slick-evolutions" % "1.1.1"
 )
 
 pipelineStages := Seq(rjs, digest, gzip)
