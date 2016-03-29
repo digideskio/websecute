@@ -1,0 +1,43 @@
+@()(implicit req: RequestHeader)
+
+@scripts = {
+    <script type="text/javascript" src="@routes.Assets.versioned("lib/requirejs/require.js")"></script>
+    <script>
+        requirejs(['@routes.Assets.versioned("javascripts/common.js")'], function(common) {
+            requirejs(['/assets/javascripts/app/hostsPage.js'])
+        });
+    </script>
+}
+
+@sidebar = {
+    <div class="col-md-2">
+        <h3>Hosts (<span data-bind="text: sidebarItems().length"></span>)</h3>
+        @filterForm
+        <div data-bind="foreach: sidebarItems" class="list-group top-buffer">
+            <a data-bind="click: function(){$root.selectedItem($data)}" href="#" class="list-group-item">
+                <h4 data-bind="text: names[0]" class="list-group-item-heading"></h4>
+                <p data-bind="text: status" class="list-group-item-text"></p>
+            </a>
+        </div>
+    </div>
+}
+
+@filterForm = {
+    <div class="form-inline">
+        <div class="input-group">
+            <div class="input-group-addon">--filter</div>
+            <input data-bind="textInput: filterKey" type="text" class="form-control" placeholder="key">
+            <div class="input-group-addon">=</div>
+            <input data-bind="textInput: filterValue" type="text" class="form-control" placeholder="value">
+            <div class="input-group-btn">
+                <button data-bind="click: requestHosts" type="submit" class="btn btn-primary">Ok</button>
+            </div>
+        </div>
+    </div>
+}
+
+@main("Containers", scripts) {
+    <div class="row">
+        @sidebar
+    </div>
+}
